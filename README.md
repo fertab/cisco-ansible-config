@@ -175,7 +175,8 @@ mkdir -p ansible_project/roles/cisco_nxos/templates
 mkdir -p ansible_project/roles/cisco_nxos/vars
 ```
 
-## 2. Create the Necessary Files: Create and populate the files as described above.
+## 2. Create the Necessary Files: 
+### Create and populate the files as described above.
 
 ## 3. Navigate to the Project Directory:
 ```bash
