@@ -5,7 +5,7 @@
 This Ansible project automates the configuration of Cisco Nexus 9k switches. It includes enabling necessary features, setting up VLANs, SNMP, NTP, Syslog, Time Zone, TACACS+, Spanning Tree Protocol (STP), and Virtual Port Channel (VPC).
 
 ## Project Structure
-
+```
 ansible_project/
 ├── inventory
 │   └── hosts
@@ -18,7 +18,7 @@ ansible_project/
         │   └── config.j2
         └── vars/
             └── main.yml
-
+```
 
 
 ## Inventory File
@@ -26,29 +26,29 @@ ansible_project/
 Defines the switches and their credentials.
 
 **Path:** `inventory/hosts`
-
+```ini
 [switches]
 switch1 ansible_host=10.32.14.26 ansible_user=admin ansible_password=admin_password
 switch2 ansible_host=10.32.15.103 ansible_user=admin ansible_password=admin_password
-
+```
 ## Playbook File
 Calls the cisco_nxos role to configure the switches.
 
-Path: playbook.yml
-
+**Path:** `playbook.yml`
+```yaml
 ---
 - name: Configure Cisco Nexus 9k Switches
   hosts: switches
   gather_facts: false
   roles:
     - cisco_nxos
-
+```
 ## Variables File
 Defines the configuration parameters for the switches.
 
-Path: roles/cisco_nxos/vars/main.yml
+**Path:** `roles/cisco_nxos/vars/main.yml`
 
-
+```yaml
 ntp_server: "10.216.25.226"
 syslog_server: "10.150.145.76"
 timezone: "CST"
@@ -79,13 +79,13 @@ vlans:
   - { id: 2733, name: "BAREMETAL_mgmt" }
   - { id: 2748, name: "LB_Nginx" }
   - { id: 2749, name: "App" }
-
+```
 
 ## Tasks File
 Generates the NX-OS configuration from the template and applies it to the switches.
 
-Path: roles/cisco_nxos/tasks/main.yml
-
+**Path:* `roles/cisco_nxos/tasks/main.yml`
+```yaml
 ---
 - name: Generate NX-OS configuration
   template:
@@ -95,13 +95,13 @@ Path: roles/cisco_nxos/tasks/main.yml
 - name: Apply NX-OS configuration
   cisco.nxos.nxos_config:
     src: /tmp/config.cfg
-
+```
 
 ## Template File
 Defines the commands to configure the switches.
 
-Path: roles/cisco_nxos/templates/config.j2
-
+**Path:** `roles/cisco_nxos/templates/config.j2`
+```j2
 !
 ! Enable necessary features
 !
@@ -163,3 +163,34 @@ interface port-channel10
   switchport trunk allowed vlan 2732,2733,2748,2749
   vpc peer-link
 !
+```
+
+# How to Use
+## 1. Create the Project Structure:
+
+```bash
+mkdir -p ansible_project/inventory
+mkdir -p ansible_project/roles/cisco_nxos/tasks
+mkdir -p ansible_project/roles/cisco_nxos/templates
+mkdir -p ansible_project/roles/cisco_nxos/vars
+```
+
+## 2. Create the Necessary Files: Create and populate the files as described above.
+
+## 3. Navigate to the Project Directory:
+```bash
+ansible-galaxy collection install cisco.nxos
+```
+## 4. Install the Cisco NX-OS Collection:
+```bash
+ansible-galaxy collection install cisco.nxos
+```
+
+## 5. Run the Playbook:
+```bash
+ansible-playbook -i inventory/hosts playbook.yml
+```
+This command will execute the playbook playbook.yml using the inventory defined in inventory/hosts. The configurations will be generated from the template and applied to the Cisco Nexus 9k switches.
+
+
+
