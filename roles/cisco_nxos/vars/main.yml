@@ -1,0 +1,30 @@
+ntp_server: "10.216.25.226"
+syslog_server: "10.150.145.76"
+timezone: "CST"
+timezone_offset: -6
+snmp_communities:
+  - name: "netview"
+    permission: "RO"
+    group: "SystemOwner"
+  - name: "n3tc00lnm"
+    permission: "RO"
+    group: "SystemOwner"
+  - name: "0SSN3TC00L"
+    permission: "RO"
+    group: "SystemOwner"
+  - name: "NII0r10n3g"
+    permission: "RO"
+    group: "SystemOwner"
+  - name: "Pr1m3Su1t3_2016"
+    permission: "RW"
+    group: ""
+  - name: "3PnM4n4g3R_2017!"
+    permission: "RO"
+    group: "SystemOwner"
+snmp_contact: "mx.noc.ipcore@mx.att.com"
+snmp_location: "NGDC MTY APODACA"
+vlans:
+  - { id: 2732, name: "IPMI_iDRAC" }
+  - { id: 2733, name: "BAREMETAL_mgmt" }
+  - { id: 2748, name: "LB_Nginx" }
+  - { id: 2749, name: "App" }

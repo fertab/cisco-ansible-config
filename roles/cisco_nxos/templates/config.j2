@@ -1,0 +1,61 @@
+!
+! Enable necessary features
+!
+feature lacp
+feature interface-vlan
+feature vtp
+feature vpc
+!
+! Configure VLANs
+!
+{% for vlan in vlans %}
+vlan {{ vlan.id }}
+  name {{ vlan.name }}
+{% endfor %}
+!
+! Configure SNMP
+!
+snmp-server contact {{ snmp_contact }}
+snmp-server location {{ snmp_location }}
+{% for community in snmp_communities %}
+snmp-server community {{ community.name }} {{ community.permission }} {{ community.group }}
+{% endfor %}
+!
+! Configure NTP
+!
+ntp server {{ ntp_server }} use-vrf management
+!
+! Configure Syslog
+!
+logging server {{ syslog_server }} 5 use-vrf management
+!
+! Configure Time Zone
+!
+clock timezone {{ timezone }} {{ timezone_offset }}
+!
+! Configure TACACS+
+!
+tacacs-server host 10.32.15.100 key 0oT$v&2OabSe5Q
+!
+! Configure Spanning Tree
+!
+interface Ethernet1/1
+  spanning-tree portfast
+  spanning-tree bpduguard enable
+interface Ethernet1/2
+  spanning-tree portfast
+  spanning-tree bpduguard enable
+!
+! Configure VPC
+!
+vpc domain 1
+  peer-switch
+  role priority 1
+  system priority 2500
+  peer-keepalive destination {{ hostvars['switch2']['ansible_host'] }} source {{ hostvars['switch1']['ansible_host'] }} vrf management
+!
+interface port-channel10
+  switchport mode trunk
+  switchport trunk allowed vlan 2732,2733,2748,2749
+  vpc peer-link
+!

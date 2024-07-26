@@ -1,0 +1,9 @@
+---
+- name: Generate NX-OS configuration
+  template:
+    src: config.j2
+    dest: /tmp/config.cfg
+
+- name: Apply NX-OS configuration
+  cisco.nxos.nxos_config:
+    src: /tmp/config.cfg

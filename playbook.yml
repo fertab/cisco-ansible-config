@@ -1,0 +1,6 @@
+---
+- name: Configure Cisco Nexus 9k Switches
+  hosts: switches
+  gather_facts: false
+  roles:
+    - cisco_nxos
