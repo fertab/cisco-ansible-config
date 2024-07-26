@@ -190,7 +190,7 @@ ansible-galaxy collection install cisco.nxos
 ```bash
 ansible-playbook -i inventory/hosts playbook.yml
 ```
-This command will execute the playbook playbook.yml using the inventory defined in inventory/hosts. The configurations will be generated from the template and applied to the Cisco Nexus 9k switches.
+This command will execute the playbook playbook.yml using the inventory defined in `inventory/hosts`. The configurations will be generated from the template and applied to the Cisco Nexus 9k switches.
 
 
 
