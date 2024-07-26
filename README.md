@@ -84,7 +84,7 @@ vlans:
 ## Tasks File
 Generates the NX-OS configuration from the template and applies it to the switches.
 
-**Path:* `roles/cisco_nxos/tasks/main.yml`
+**Path:** `roles/cisco_nxos/tasks/main.yml`
 ```yaml
 ---
 - name: Generate NX-OS configuration
