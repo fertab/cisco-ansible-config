@@ -2,5 +2,19 @@
 - name: Configure Cisco Nexus 9k Switches
   hosts: switches
   gather_facts: false
-  roles:
-    - cisco_nxos
+
+  vars:
+    ansible_connection: ansible.netcommon.network_cli
+    ansible_network_os: cisco.nxos.nxos
+    ansible_become: true
+    ansible_become_method: enable
+
+  tasks:
+    - name: Generate NX-OS configuration from template
+      template:
+        src: config.j2
+        dest: /tmp/config.cfg
+
+    - name: Apply NX-OS configuration
+      cisco.nxos.nxos_config:
+        src: /tmp/config.cfg
