@@ -40,8 +40,22 @@ Calls the cisco_nxos role to configure the switches.
 - name: Configure Cisco Nexus 9k Switches
   hosts: switches
   gather_facts: false
-  roles:
-    - cisco_nxos
+
+  vars:
+    ansible_connection: ansible.netcommon.network_cli
+    ansible_network_os: cisco.nxos.nxos
+    ansible_become: true
+    ansible_become_method: enable
+
+  tasks:
+    - name: Generate NX-OS configuration from template
+      template:
+        src: config.j2
+        dest: /tmp/config.cfg
+
+    - name: Apply NX-OS configuration
+      cisco.nxos.nxos_config:
+        src: /tmp/config.cfg
 ```
 ## Variables File
 Defines the configuration parameters for the switches.
@@ -156,7 +170,12 @@ vpc domain 1
   peer-switch
   role priority 1
   system priority 2500
-  peer-keepalive destination {{ hostvars['switch2']['ansible_host'] }} source {{ hostvars['switch1']['ansible_host'] }} vrf management
+  ! Loop over all other switches in the group to configure peer-keepalive
+  {% for switch_name in groups['switches'] %}
+    {% if switch_name != inventory_hostname %}
+  peer-keepalive destination {{ hostvars[switch_name]['ansible_host'] }} source {{ hostvars[inventory_hostname]['ansible_host'] }} vrf management
+    {% endif %}
+  {% endfor %}
 !
 interface port-channel10
   switchport mode trunk
