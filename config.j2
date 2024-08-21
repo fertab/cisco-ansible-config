@@ -73,7 +73,6 @@ interface Ethernet1/2
 vpc domain 1
   peer-switch
   role priority 1
-  system priority 4096
   {% for switch_name in groups['switches'] %}
     {% if switch_name != inventory_hostname %}
   peer-keepalive destination {{ hostvars[switch_name]['ansible_host'] }} source {{ hostvars[inventory_hostname]['ansible_host'] }} vrf management
