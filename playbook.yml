@@ -16,6 +16,8 @@
     snmp_communities:
       - name: "public"
         permission: "RO"
+      - name: "netview"
+        permission: "RO"
 
 
     ntp_server: "time.nist.gov"

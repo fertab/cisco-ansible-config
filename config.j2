@@ -22,11 +22,15 @@ vlan {{ vlan.id }}
 !
 snmp-server contact {{ snmp_contact }}
 snmp-server location {{ snmp_location }}
+{% if snmp_communities is defined and snmp_communities | length > 0 %}
 {% for community in snmp_communities %}
   {% if community.name is defined and community.permission is defined %}
 snmp-server community {{ community.name }} {{ community.permission }}
   {% endif %}
 {% endfor %}
+{% else %}
+! SNMP communities not configured
+{% endif %}
 {% else %}
 ! SNMP settings not configured
 {% endif %}
