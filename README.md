@@ -2,7 +2,7 @@
 
 ## Overview
 
-This Ansible project automates the configuration of Cisco Nexus 9k switches. It includes enabling necessary features, setting up VLANs, SNMP, NTP, Syslog, Time Zone, TACACS+, Spanning Tree Protocol (STP), and Virtual Port Channel (VPC).
+This Ansible project automates the configuration of Cisco Nexus 9k switches. It includes enabling necessary features, setting up VLANs, SNMP, NTP, Syslog, Time Zone, Spanning Tree Protocol (STP), and Virtual Port Channel (VPC).
 
 ## Project Structure
 ```
@@ -10,14 +10,9 @@ ansible_project/
 ├── inventory
 │   └── hosts
 ├── playbook.yml
+├── config.j2
 └── roles/
-    └── cisco_nxos/
-        ├── tasks/
-        │   └── main.yml
-        ├── templates/
-        │   └── config.j2
-        └── vars/
-            └── main.yml
+    └── main.yml
 ```
 
 
@@ -32,7 +27,7 @@ switch1 ansible_host=10.32.14.26 ansible_user=admin ansible_password=admin_passw
 switch2 ansible_host=10.32.15.103 ansible_user=admin ansible_password=admin_password
 ```
 ## Playbook File
-Calls the cisco_nxos role to configure the switches.
+Applies the switch configuration directly using the playbook and the config.j2 template located in the project root directory.
 
 **Path:** `playbook.yml`
 ```yaml
@@ -60,7 +55,7 @@ Calls the cisco_nxos role to configure the switches.
 ## Variables File
 Defines the configuration parameters for the switches.
 
-**Path:** `roles/cisco_nxos/vars/main.yml`
+**Path:** `roles/main.yml`
 
 ```yaml
 ntp_server: "10.216.25.226"
@@ -95,26 +90,12 @@ vlans:
   - { id: 2749, name: "App" }
 ```
 
-## Tasks File
-Generates the NX-OS configuration from the template and applies it to the switches.
 
-**Path:** `roles/cisco_nxos/tasks/main.yml`
-```yaml
----
-- name: Generate NX-OS configuration
-  template:
-    src: config.j2
-    dest: /tmp/config.cfg
-
-- name: Apply NX-OS configuration
-  cisco.nxos.nxos_config:
-    src: /tmp/config.cfg
-```
 
 ## Template File
 Defines the commands to configure the switches.
 
-**Path:** `roles/cisco_nxos/templates/config.j2`
+**Path:** `config.j2`
 ```j2
 !
 ! Enable necessary features
@@ -123,6 +104,7 @@ feature lacp
 feature interface-vlan
 feature vtp
 feature vpc
+{% if vlans is defined and vlans | length > 0 %}
 !
 ! Configure VLANs
 !
@@ -130,30 +112,47 @@ feature vpc
 vlan {{ vlan.id }}
   name {{ vlan.name }}
 {% endfor %}
+{% else %}
+! No VLANs to configure
+{% endif %}
+{% if snmp_contact is defined and snmp_location is defined %}
 !
 ! Configure SNMP
 !
 snmp-server contact {{ snmp_contact }}
 snmp-server location {{ snmp_location }}
 {% for community in snmp_communities %}
-snmp-server community {{ community.name }} {{ community.permission }} {{ community.group }}
+  {% if community.name is defined and community.permission is defined %}
+snmp-server community {{ community.name }} {{ community.permission }}
+  {% endif %}
 {% endfor %}
+{% else %}
+! SNMP settings not configured
+{% endif %}
+{% if ntp_server is defined %}
 !
 ! Configure NTP
 !
 ntp server {{ ntp_server }} use-vrf management
+{% else %}
+! NTP server not configured
+{% endif %}
+{% if syslog_server is defined %}
 !
 ! Configure Syslog
 !
 logging server {{ syslog_server }} 5 use-vrf management
+{% else %}
+! Syslog server not configured
+{% endif %}
+{% if timezone is defined and timezone_offset is defined %}
 !
 ! Configure Time Zone
 !
-clock timezone {{ timezone }} {{ timezone_offset }}
-!
-! Configure TACACS+
-!
-tacacs-server host 10.32.15.100 key 0oT$v&2OabSe5Q
+clock timezone {{ timezone }} {{ timezone_offset }} 0
+{% else %}
+! Timezone not configured
+{% endif %}
 !
 ! Configure Spanning Tree
 !
@@ -170,7 +169,6 @@ vpc domain 1
   peer-switch
   role priority 1
   system priority 2500
-  ! Loop over all other switches in the group to configure peer-keepalive
   {% for switch_name in groups['switches'] %}
     {% if switch_name != inventory_hostname %}
   peer-keepalive destination {{ hostvars[switch_name]['ansible_host'] }} source {{ hostvars[inventory_hostname]['ansible_host'] }} vrf management
@@ -189,17 +187,13 @@ interface port-channel10
 
 ```bash
 mkdir -p ansible_project/inventory
-mkdir -p ansible_project/roles/cisco_nxos/tasks
-mkdir -p ansible_project/roles/cisco_nxos/templates
-mkdir -p ansible_project/roles/cisco_nxos/vars
+mkdir -p ansible_project/roles
 ```
 
 ## 2. Create the Necessary Files: create and populate the files as described above (or clone this repository)
 
 ## 3. Navigate to the Project Directory:
-```bash
-ansible-galaxy collection install cisco.nxos
-```
+
 ## 4. Install the Cisco NX-OS Collection:
 ```bash
 ansible-galaxy collection install cisco.nxos
@@ -209,7 +203,7 @@ ansible-galaxy collection install cisco.nxos
 ```bash
 ansible-playbook -i inventory/hosts playbook.yml
 ```
-This command will execute the playbook playbook.yml using the inventory defined in `inventory/hosts`. The configurations will be generated from the template and applied to the Cisco Nexus 9k switches.
+This command will execute the playbook playbook.yml using the inventory defined in `inventory/hosts`. The configurations will be generated from the playbook and applied to the Cisco Nexus 9k switches.
 
 
 

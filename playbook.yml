@@ -9,8 +9,22 @@
     ansible_become: true
     ansible_become_method: enable
 
+    vlans: []
+
+    snmp_contact: "Default Contact"
+    snmp_location: "Default Location"
+    snmp_communities:
+      - name: "public"
+        permission: "RO"
+
+
+    ntp_server: "time.nist.gov"
+    syslog_server: "syslog.example.com"
+    timezone: "CST"
+    timezone_offset: "-6"
+
   tasks:
-    - name: Generate NX-OS configuration from template
+    - name: Generate NX-OS configuration
       template:
         src: config.j2
         dest: /tmp/config.cfg

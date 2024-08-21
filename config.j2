@@ -5,6 +5,7 @@ feature lacp
 feature interface-vlan
 feature vtp
 feature vpc
+{% if vlans is defined and vlans | length > 0 %}
 !
 ! Configure VLANs
 !
@@ -12,30 +13,47 @@ feature vpc
 vlan {{ vlan.id }}
   name {{ vlan.name }}
 {% endfor %}
+{% else %}
+! No VLANs to configure
+{% endif %}
+{% if snmp_contact is defined and snmp_location is defined %}
 !
 ! Configure SNMP
 !
 snmp-server contact {{ snmp_contact }}
 snmp-server location {{ snmp_location }}
 {% for community in snmp_communities %}
-snmp-server community {{ community.name }} {{ community.permission }} {{ community.group }}
+  {% if community.name is defined and community.permission is defined %}
+snmp-server community {{ community.name }} {{ community.permission }}
+  {% endif %}
 {% endfor %}
+{% else %}
+! SNMP settings not configured
+{% endif %}
+{% if ntp_server is defined %}
 !
 ! Configure NTP
 !
 ntp server {{ ntp_server }} use-vrf management
+{% else %}
+! NTP server not configured
+{% endif %}
+{% if syslog_server is defined %}
 !
 ! Configure Syslog
 !
 logging server {{ syslog_server }} 5 use-vrf management
+{% else %}
+! Syslog server not configured
+{% endif %}
+{% if timezone is defined and timezone_offset is defined %}
 !
 ! Configure Time Zone
 !
-clock timezone {{ timezone }} {{ timezone_offset }}
-!
-! Configure TACACS+
-!
-tacacs-server host 10.32.15.100 key 0oT$v&2OabSe5Q
+clock timezone {{ timezone }} {{ timezone_offset }} 0
+{% else %}
+! Timezone not configured
+{% endif %}
 !
 ! Configure Spanning Tree
 !
@@ -52,7 +70,6 @@ vpc domain 1
   peer-switch
   role priority 1
   system priority 2500
-  ! Loop over all other switches in the group to configure peer-keepalive
   {% for switch_name in groups['switches'] %}
     {% if switch_name != inventory_hostname %}
   peer-keepalive destination {{ hostvars[switch_name]['ansible_host'] }} source {{ hostvars[inventory_hostname]['ansible_host'] }} vrf management
